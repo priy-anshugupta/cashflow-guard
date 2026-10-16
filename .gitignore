@@ -6,6 +6,7 @@ __pycache__/
 *.pyc
 cache/
 sample_output.csv
+code/tests/sample_output_test.csv
 .venv/
 venv/
 .pytest_cache/

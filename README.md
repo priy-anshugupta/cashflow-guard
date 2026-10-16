@@ -1,193 +1,199 @@
-# HackerRank Orchestrate
+<div align="center">
 
-Starter repository for the **HackerRank Orchestrate** 24-hour hackathon (September 2026).
+# Cashflow Guard
 
-## Buy or Wait?
+### Can you afford it today—and still cover what comes next?
 
-Build an AI-powered financial agent that decides whether a user can safely afford a requested expense.
+An AI-powered affordability agent that combines multimodal evidence extraction with deterministic cash-flow forecasting.
 
-A user may ask: **"Can I afford this laptop?"**
+**HackerRank Orchestrate · September 2026**  
+**Ranked #65 out of 3,062 participants globally · Top 2.2%**
 
-Answering well takes more than the current balance. The agent must account for recurring expenses, pending payments, essential spending, confirmed income, available payment options, and relevant details buried in messages and images.
+[Quick start](#quick-start) · [Architecture](#how-it-works) · [Example](#try-it-without-an-api-key) · [Tests](#verification) · [Limitations](docs/limitations.md)
 
-For every request, the agent decides whether the user should pay in full, pay partially, use installments, wait, or not proceed. The recommendation must be personalized: two users with the same balance can deserve different answers based on their commitments, priorities, payment preferences, and willingness to adjust flexible expenses.
-
-A recommendation is safe only if the user can complete the full payment plan, cover essential expenses, and stay above their preferred minimum balance throughout the forecast period.
-
-Read [`problem_statement.md`](./problem_statement.md) for the full task spec, input/output schema, allowed values, conflict-resolution rules, and submission format.
+</div>
 
 ---
 
-## Quick Start
+## Why this exists
 
-Clone the repository and move into the project directory:
+A bank balance is a snapshot. Affordability depends on timing: rent due before payday, pending debits, essential expenses, and the cash buffer someone wants to keep.
 
-```bash
-git clone https://github.com/interviewstreet/hackerrank-orchestrate-september26.git
-cd hackerrank-orchestrate-september26
-```
+Cashflow Guard evaluates a purchase against a projected 90-day cash-flow timeline. It recommends a full payment, a partial-payment schedule, an available installment option, waiting, or not proceeding. Each request is evaluated independently against the supplied financial context.
 
-Build your solution in `code/main.py`, or use another language and document its entry point clearly.
+**The design principle: AI interprets evidence; deterministic code calculates affordability.**
 
-Your solution must:
+Built by [Priyanshu Gupta](https://github.com/priy-anshugupta) during the 24-hour **HackerRank Orchestrate: Buy or Wait?** challenge. The rank above is the author's reported competition result, not a model accuracy score.
 
-- Read the input files from `dataset/`
-- Generate one prediction for every request
-- Write the final predictions to `output.csv` in the repository root
+## What it handles
 
-Run the starter Python entry point with:
-
-```bash
-python3 code/main.py
-```
-
-After running your solution, confirm that `output.csv` exists in the repository root and contains the required columns and one row for every request.
-
-## Important File Locations
-
-```text
-dataset/        Input data and the blank output template. Do not modify the input data.
-code/           Your solution code.
-output.csv      Final generated predictions in the repository root.
-code.zip        ZIP file containing your complete solution for submission.
-```
-
-The blank template at `dataset/output.csv` is provided as a reference. Your final generated file must be the root-level `output.csv`.
-
----
-
-## Repository Layout
-
-```text
-.
-├── AGENTS.md                         # Rules for AI coding tools + transcript logging
-├── problem_statement.md              # Full challenge statement
-├── README.md                         # You are here
-├── code/                             # Your solution code
-├── output.csv                        # Final generated predictions
-└── dataset/
-    ├── requests.csv                  # 250 requests to evaluate — predict these
-    ├── output.csv                    # Blank submission template
-    ├── sample_requests.csv           # 25 solved examples
-    ├── financial_profiles.csv        # Balances, minimum balance, priorities, preferences
-    ├── financial_events.csv          # Historical, pending, and confirmed transactions
-    ├── request_payment_options.csv   # Payment options available per request
-    ├── exchange_rates.csv            # Fixed, dated conversion rates
-    ├── messages.csv                  # Messages tied to users, requests, or events
-    ├── images.csv                    # Payroll letters, statements, bills, receipts
-    └── media/
-        └── images/
-```
-
-Only `dataset/requests.csv` requires predictions. Everything else is context. Join user records with `user_id`, request records with `request_id`, supporting evidence with `related_event_id`, and exchange rates with the rate date and currency pair.
-
-Amounts are in the user's `home_currency` — the dataset uses INR, ZAR, IDR, USD, and EUR, and every conversion rate you need is in `exchange_rates.csv`. All dates are `YYYY-MM-DD`. Live exchange rates, market data, and banking access are not required.
-
----
-
-## What You Need to Build
-
-For every row in `dataset/requests.csv`, produce one row in `output.csv` with:
-
-| Column | Meaning |
+| Capability | Implementation |
 |---|---|
-| `request_id` | The request being answered |
-| `amount_safe_to_pay` | Largest amount safe to pay on `request_date` before optional spending changes, after protecting essentials and the minimum balance |
+| Financial context | Typed profiles, transactions, commitments, preferences, and seller payment options |
+| Document evidence | Vision extraction of amounts from payslips, invoices, and receipts, with schema and arithmetic checks |
+| Message interpretation | Structured cash-flow effects with deterministic vetoes for suspicious instructions |
+| Cash-flow forecasting | Daily balance simulation with debits applied before same-day credits |
+| Spending safety | Minimum projected cushion, capped by the requested amount |
+| Payment planning | Candidate schedules, preference checks, simulation, and deterministic ranking |
+| Currency handling | Supplied dated exchange rates; no live banking or market calls |
+| Audit artifacts | Eight-column CSV output and a model usage report |
+
+## How it works
+
+![Cashflow Guard architecture](assets/architecture.svg)
+
+1. **Load and validate.** Join records by user, request, and event identifiers; sanitize untrusted text.
+2. **Extract evidence.** Read document amounts and classify relevant messages using configurable models. Validate the returned structure before it can affect the ledger.
+3. **Reconstruct state.** Resolve cash states and amendments, reserve pending debits, infer supported recurrence, and normalize currencies.
+4. **Simulate and plan.** Project daily balances, calculate the amount safe today, evaluate payment candidates, and rank them.
+5. **Explain and export.** Produce grounded explanations, validate the output structure, and record model usage.
+
+For an immediate payment, the core calculation is:
+
+```text
+safe_today = round(max(0, min(requested_amount, minimum_projected_cushion)), 2)
+minimum_projected_cushion = min(projected_intraday_balance - required_reserve)
+```
+
+The current implementation computes this directly from the simulated cushion. It does not use binary search. See [architecture](docs/architecture.md) and [decision policy](docs/decision-policy.md) for implementation details and caveats.
+
+## Quick start
+
+Requires **Python 3.10+**. Local verification used Python 3.13; CI is configured for 3.11 and 3.13.
+
+```bash
+git clone https://github.com/priy-anshugupta/Cashflow---Guard.git
+cd Cashflow---Guard
+python -m venv .venv
+```
+
+Activate the environment:
+
+```powershell
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+```
+
+```bash
+# macOS / Linux
+source .venv/bin/activate
+```
+
+```bash
+python -m pip install -r code/requirements.txt
+```
+
+Copy `.env.example` to `.env` and set your own `OPENAI_API_KEY`. You can change `VISION_MODEL` and `NLP_MODEL` to models available to your account. The defaults reflect the submitted implementation. Model access and API charges depend on your account.
+
+The full pipeline reads the challenge files in `dataset/`, including images. See the [data contract](docs/data-contract.md) for required files.
+
+```bash
+# Evaluate all requests
+python code/main.py
+
+# Evaluate the solved samples
+python code/main.py --sample --report evaluation/sample_usage_report.md
+
+# Require fresh model evidence rather than cached extraction
+python code/main.py --require-live
+```
+
+Without a key, a full run requires previously validated OCR cache entries. A fresh clone does not include the private local cache. Use the standalone example below to explore the deterministic core without model access.
+
+**Output behavior:** a full run writes root-level `output.csv` and mirrors it to `dataset/output.csv`. It also writes `evaluation/usage_report.md`. Sample mode writes `sample_output.csv`; use a separate `--report` path to preserve the submitted report.
+
+## Try it without an API key
+
+After installing the dependencies:
+
+```bash
+python examples/safe_spending.py
+```
+
+The example uses synthetic figures: balance **3,000**, minimum reserve **1,000**, rent of **1,200** before confirmed salary of **2,000**, and a requested purchase of **1,500**.
+
+```text
+Requested: 1500.00
+Safe to pay today: 800.00
+Full payment today preserves reserve: False
+Lowest balance after full payment: 300.00
+```
+
+The upcoming salary does not remove the earlier cash shortfall. This example demonstrates the simulator and safe-amount calculation; it does not run the complete recommendation pipeline.
+
+## Output contract
+
+Every evaluation request produces one row with these columns:
+
+```csv
+request_id,amount_safe_to_pay,affordability_status,recommended_payment_method,payment_plan,earliest_date_for_full_payment,spending_changes_needed,decision_explanation
+```
+
+| Field | Meaning |
+|---|---|
+| `amount_safe_to_pay` | Amount safe on the request date before optional spending changes |
 | `affordability_status` | `affordable_now`, `affordable_with_plan`, `affordable_later`, or `not_affordable` |
 | `recommended_payment_method` | `full_payment`, `partial_payment`, `installments`, `wait`, or `not_recommended` |
-| `payment_plan` | Chronological `<YYYY-MM-DD>:<amount>` entries joined by `\|`, or `none` |
-| `earliest_date_for_full_payment` | Earliest date the full amount is forecast safe as one payment; empty if never within the forecast |
-| `spending_changes_needed` | Up to three `stop:<event_id>` / `reduce_to:<event_id>:<amount>` changes joined by `\|`, or `none` |
-| `decision_explanation` | Short explanation and the financial facts behind it |
+| `payment_plan` | Dated payments separated by `\|`, or `none` |
+| `earliest_date_for_full_payment` | Projected date for a single full payment, or empty |
+| `spending_changes_needed` | Up to three permitted changes, or `none` |
+| `decision_explanation` | Concise explanation tied to financial context |
 
-`0 <= amount_safe_to_pay <= requested_amount` must always hold. Installment plans must exactly match a supplied payment option, and only recurring expenses marked flexible may be changed.
+See the [original problem statement](problem_statement.md) for the complete challenge contract. Schema validation does not establish financial correctness; [known limitations](docs/limitations.md) describe the practical boundaries.
 
-`affordable_with_plan` means the full request is completed through a partial-payment schedule, installments, or permitted spending changes. Recommend `partial_payment` only when the request allows it, the user accepts it, `0 < amount_safe_to_pay < requested_amount`, and `earliest_date_for_full_payment` is on or before `desired_completion_date`. Use exactly two payments: pay `amount_safe_to_pay` on `request_date`, then pay the remaining amount on `earliest_date_for_full_payment`. The two payments must add up to `requested_amount`. Unlike installments, partial payment does not need to match a supplied payment option.
+## Verification
 
----
-
-## Suggested Workflow
-
-1. Inspect `dataset/sample_requests.csv` — 25 requests with completed output columns — to understand the expected format and decision style.
-2. Reconstruct each user's financial state from `financial_profiles.csv` and `financial_events.csv`: separate recurring expenses from one-time events, reserve pending transactions, count confirmed salary only on its settlement date, and de-duplicate repeated representations of the same event.
-3. When an event has a blank `amount`, find its `event_id` as `related_event_id` in `images.csv` and extract the amount from the linked image. Never treat a blank amount as zero. Pull in any other relevant messages, images, and payment options for the request.
-4. Forecast forward and generate a plan that keeps the balance above the minimum at every step.
-5. Verify deterministically — bounds, plan feasibility, schedule match, flexible-only spending changes — before writing `output.csv`.
-6. Score yourself on the solved samples, then run the full dataset.
-
-You may use any language or runtime. Python, JavaScript, and TypeScript are all reasonable choices.
-
----
-
-## Requirements
-
-Your solution must:
-
-- be runnable from the terminal
-- read the provided files from `dataset/`
-- produce a valid `output.csv` with the exact required columns in the exact required order
-- include one prediction for every `request_id` in `dataset/requests.csv`
-- not use organizer-only files or hardcoded labels
-- keep behavior deterministic where possible
-
-If you use API keys or secrets, read them from environment variables. Never hardcode secrets in the repo.
-
----
-
-## Evaluation
-
-Your `output.csv` will be compared against hidden ground-truth values.
-
-The scoring will consider:
-
-- accuracy of `amount_safe_to_pay`
-- correctness of `affordability_status`
-- correctness of `recommended_payment_method` and `payment_plan`
-- accuracy of `earliest_date_for_full_payment`
-- validity of `spending_changes_needed`
-- usefulness and consistency of `decision_explanation`
-
-### Token Usage And Cost Analysis
-
-Your `code.zip` must include one token-usage file:
-
-```text
-evaluation/usage_report.md
+```bash
+python -m pytest
+python -m compileall -q code examples
+python examples/safe_spending.py
 ```
 
-The report must cover model providers and names, model calls, input and output tokens, total and average tokens per request, estimated total and per-request cost. The reported values must correspond to the final full-dataset run that produced your `output.csv`.
+The default pytest selection runs the **12 guardrail regression tests**, covering message injection detection, model schemas, OCR consistency, currency parsing, deterministic isolation, spending changes, and expense cushions. These checks passed locally during portfolio preparation. They do not measure hidden evaluation accuracy.
 
----
+GitHub Actions is configured to run these checks on Python 3.11 and 3.13. Historical scripts that may load datasets or make model calls remain available explicitly; see the [testing guide](docs/testing.md).
 
-## Chat Transcript Logging
+## Recorded challenge run
 
-This repo includes an [`AGENTS.md`](./AGENTS.md) file for AI coding tools. It asks compatible tools to append conversation summaries to a `log.txt` in the repository root — the same directory as `AGENTS.md`:
+The supplied [usage report](evaluation/usage_report.md) records the September 13, 2026 run:
 
-| Platform | Path |
-|---|---|
-| macOS / Linux | `<repo root>/log.txt` |
-| Windows | `<repo root>\log.txt` |
+| Metric | Recorded value |
+|---|---:|
+| Evaluation requests | 250 |
+| Model calls | 25 |
+| Input tokens | 41,568 |
+| Output tokens | 10,965 |
+| Total tokens | 52,533 |
+| Average tokens per request | 210.1 |
+| Estimated model cost | US$0.2684 |
+| Elapsed pipeline time | 121.18 seconds |
 
-The path resolves relative to `AGENTS.md`, so it stays correct across clones, renames, and checkouts. `log.txt` is gitignored — upload it as your chat transcript at submission time. Do not paste secrets into the chat.
+These are historical artifact values, not measurements from the portfolio checks or current pricing. They have not been independently re-run here. See [reproducibility](docs/reproducibility.md) for cache behavior and cost-report assumptions.
 
-In case, the harness you are using is not in the repo root, you can explicitly ask the agent to look for the AGENTS.md in this folder & then continue.
+## Repository map
 
----
+```text
+Cashflow---Guard/
+├── code/
+│   ├── main.py                 # CLI and orchestration
+│   ├── config.py               # Paths and model configuration
+│   ├── data/                   # Models, loaders, and joins
+│   ├── extraction/             # Vision, messages, currency, cache
+│   ├── engine/                 # Ledger, simulator, and payment planning
+│   ├── output/                 # Deterministic explanations
+│   └── tests/                  # Guardrails and historical experiments
+├── dataset/                    # Organizer-provided challenge inputs
+├── docs/                       # Design, policy, testing, limitations
+├── examples/safe_spending.py    # Synthetic example without API calls
+├── evaluation/usage_report.md   # Recorded challenge usage
+├── output.csv                  # Existing challenge predictions
+└── .github/workflows/checks.yml
+```
 
-## Submission
+## Scope and attribution
 
-Submit the following files as instructed by HackerRank:
+Cashflow Guard is a hackathon prototype for the supplied challenge data. It uses floating-point amounts, heuristics for recurrence and message interpretation, and external models for evidence extraction. Deterministic calculations can still contain software or modeling errors. It has no live bank integration and does not execute payments. Review the [limitations](docs/limitations.md) before adapting it.
 
-| File | Description |
-|---|---|
-| `code.zip` | Full runnable solution, prompts/configuration, README, and the required `evaluation/` folder |
-| `output.csv` | Predictions for every row in `dataset/requests.csv` |
-| `chat_transcript` | The `log.txt` described above, showing how you developed or used the system |
+The repository includes the challenge specification, dataset, and agent instructions from [HackerRank's starter repository](https://github.com/interviewstreet/hackerrank-orchestrate-september26). The implementation and portfolio documentation are presented as Priyanshu Gupta's challenge project. The published Git history contains the 50 project commits; the organizer's earlier commits are excluded. No new license is asserted over organizer materials; see [provenance](docs/provenance.md).
 
-Before submitting, confirm:
-
-- `output.csv` has one row per row in `dataset/requests.csv` (250 rows plus the header).
-- `output.csv` has the exact required columns in the exact required order.
-- Every `amount_safe_to_pay` satisfies `0 <= amount_safe_to_pay <= requested_amount`.
-- Every installment plan matches a supplied payment option, and every spending change targets a flexible recurring expense.
-- Your runnable code, setup instructions, and `evaluation/` folder are included in `code.zip`.
+[Contributing](CONTRIBUTING.md) · [Security boundaries](docs/security.md) · [Change notes](CHANGELOG.md)
