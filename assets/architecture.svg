@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="390" viewBox="0 0 1120 390" role="img" aria-labelledby="title desc">
+<title id="title">Cashflow Guard architecture</title>
+<desc id="desc">Structured financial records and validated AI evidence feed a deterministic ledger, simulator, payment planner, and CSV output.</desc>
+<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10" fill="none" stroke="#94a3b8" stroke-width="1.5"/></marker></defs>
+<rect width="1120" height="390" rx="18" fill="#0f172a"/>
+<g font-family="Segoe UI,Arial,sans-serif" fill="#f8fafc">
+<text x="40" y="46" font-size="23" font-weight="700">AI interprets evidence. Code calculates affordability.</text>
+<rect x="40" y="83" width="260" height="95" rx="12" fill="#1e293b" stroke="#64748b"/>
+<text x="60" y="115" font-size="17" font-weight="600">Structured inputs</text><text x="60" y="141" font-size="14" fill="#cbd5e1">Profiles · Events · Fixed FX</text><text x="60" y="162" font-size="14" fill="#cbd5e1">Requests · Payment options</text>
+<rect x="40" y="220" width="260" height="125" rx="12" fill="#1e293b" stroke="#38bdf8"/>
+<text x="60" y="251" font-size="17" font-weight="600">Multimodal evidence</text><text x="60" y="278" font-size="14" fill="#cbd5e1">Images + Messages → Models</text><text x="60" y="304" font-size="14" fill="#7dd3fc">Schemas · Safety vetoes</text><text x="60" y="325" font-size="14" fill="#7dd3fc">Currency + Arithmetic checks</text>
+<rect x="370" y="120" width="300" height="185" rx="12" fill="#123238" stroke="#2dd4bf"/>
+<text x="392" y="154" font-size="18" font-weight="600">Deterministic Python core</text><text x="392" y="187" font-size="15" fill="#ccfbf1">Reconstruct cash-flow ledger</text><text x="392" y="216" font-size="15" fill="#ccfbf1">Simulate daily reserve cushions</text><text x="392" y="245" font-size="15" fill="#ccfbf1">Calculate safe spending</text><text x="392" y="274" font-size="15" fill="#ccfbf1">Evaluate + Rank payment plans</text>
+<rect x="750" y="145" width="325" height="140" rx="12" fill="#1e293b" stroke="#64748b"/>
+<text x="773" y="179" font-size="18" font-weight="600">Recommendation + Artifacts</text><text x="773" y="209" font-size="14" fill="#cbd5e1">Pay · Split · Installments · Wait · Decline</text><text x="773" y="238" font-size="14" fill="#cbd5e1">CSV + Grounded explanation</text><text x="773" y="261" font-size="14" fill="#cbd5e1">Validation + Model usage report</text>
+</g><g stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#arrow)"><path d="M300 130H335V175H357"/><path d="M300 282H335V252H357"/><path d="M670 215H735"/></g>
+</svg>
